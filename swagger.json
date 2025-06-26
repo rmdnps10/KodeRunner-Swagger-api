@@ -1,14 +1,15 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Koderunner Event API",
+    "title": "Koderunner API",
     "version": "1.0.0",
-    "description": "Full API documentation for the TechXR Koderunner event system"
+    "description": "Koderunner 행사 진행을 위한 API 명세서  입니다. 출석 체크, 베팅, 경품 추첨 기능을 포함합니다."
   },
   "paths": {
     "/api/v1/attend/conference/{userId}": {
       "post": {
-        "summary": "Conference attendance via QR (admin)",
+        "summary": "컨퍼런스 출석 (운영진 QR 스캔)",
+        "description": "운영진이 참가자의 QR 코드를 스캔하여 컨퍼런스 출석을 기록하는 API입니다. 최초 출석 시에만 응모권을 발급합니다.",
         "parameters": [
           {
             "name": "userId",
@@ -21,7 +22,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Attendance result",
+            "description": "출석 처리 결과",
             "content": {
               "application/json": {
                 "example": {
@@ -37,7 +38,8 @@
     },
     "/api/v1/attend/session/{eid}/{trackId}/{sessionId}": {
       "post": {
-        "summary": "Session attendance (participant)",
+        "summary": "세션 출석 (참가자 입력)",
+        "description": "참가자가 세션에 참여 후 4자리 난수를 입력하여 출석을 인증하는 API입니다. 누적 세션 출석 3회마다 응모권이 발급됩니다.",
         "parameters": [
           {
             "name": "eid",
@@ -75,7 +77,7 @@
         },
         "responses": {
           "200": {
-            "description": "Session attendance result",
+            "description": "세션 출석 처리 결과",
             "content": {
               "application/json": {
                 "example": {
@@ -92,7 +94,8 @@
     },
     "/api/v1/attend/booth/{eid}/{boothId}": {
       "post": {
-        "summary": "Booth attendance (participant)",
+        "summary": "부스 출석 (참가자)",
+        "description": "참가자가 부스를 방문하여 출석을 기록하는 API입니다. 부스에 대해 1회만 유효하며 응모권이 발급됩니다.",
         "parameters": [
           {
             "name": "eid",
@@ -113,7 +116,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Booth attendance result",
+            "description": "부스 출석 결과",
             "content": {
               "application/json": {
                 "example": {
@@ -129,7 +132,8 @@
     },
     "/api/v1/random/{trackId}/{sessionId}": {
       "get": {
-        "summary": "Get session attendance random code",
+        "summary": "세션 출석용 난수 조회",
+        "description": "트랙과 세션 ID에 해당하는 4자리 출석용 난수를 조회하는 API입니다. 세션 시작 전 사용됩니다.",
         "parameters": [
           {
             "name": "trackId",
@@ -150,7 +154,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Random code response",
+            "description": "난수 반환",
             "content": {
               "application/json": {
                 "example": {
@@ -164,7 +168,8 @@
     },
     "/api/v1/user/{eid}": {
       "get": {
-        "summary": "Get user info, tickets, and betting status",
+        "summary": "유저 정보 조회",
+        "description": "특정 참가자의 기본 정보, QR 코드, 응모권 목록 및 베팅 정보를 반환하는 API입니다.",
         "parameters": [
           {
             "name": "eid",
@@ -177,7 +182,7 @@
         ],
         "responses": {
           "200": {
-            "description": "User info response",
+            "description": "유저 정보",
             "content": {
               "application/json": {
                 "example": {
@@ -188,191 +193,7 @@
                     1000,
                     1005
                   ],
-                  "bettedTeam": "\uae30\uc220\uae30\ud68d"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/game": {
-      "post": {
-        "summary": "Create a new betting game (admin)",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "example": {
-                "gameId": "game-1",
-                "name": "\uae40\uce74\ubc45\uc758 \ud658\uc804\uc18c",
-                "teams": [
-                  "\uae30\uc220\uae30\ud68d",
-                  "\uac1c\ubc1c\ud601\uc2e0",
-                  "\uc11c\ube44\uc2a4\ub514\uc790\uc778"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Game created"
-          }
-        }
-      }
-    },
-    "/api/v1/game/{gameId}/start": {
-      "post": {
-        "summary": "Start a betting game (admin)",
-        "parameters": [
-          {
-            "name": "gameId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Game started"
-          }
-        }
-      }
-    },
-    "/api/v1/game/{gameId}/finish": {
-      "post": {
-        "summary": "Finish a betting game and declare winner (admin)",
-        "parameters": [
-          {
-            "name": "gameId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "example": {
-                "winner": "\uae30\uc220\uae30\ud68d"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Winners processed, tickets issued"
-          }
-        }
-      }
-    },
-    "/api/v1/bet": {
-      "post": {
-        "summary": "Submit a bet on a game (participant)",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "example": {
-                "eid": "kxjidjijifej",
-                "gameId": "game-1",
-                "teamName": "\uae30\uc220\uae30\ud68d"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Bet registered",
-            "content": {
-              "application/json": {
-                "example": {
-                  "ok": true,
-                  "message": "\ubca0\ud305 \uc644\ub8cc"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/bet/{eid}/{gameId}": {
-      "get": {
-        "summary": "Get a user's bet for a game",
-        "parameters": [
-          {
-            "name": "eid",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "gameId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Bet info",
-            "content": {
-              "application/json": {
-                "example": {
-                  "teamName": "\uae30\uc220\uae30\ud68d"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/draw/prizes": {
-      "post": {
-        "summary": "Draw prizes from ticket pool (admin)",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "example": {
-                "prizes": [
-                  {
-                    "name": "\ub178\ud2b8\ubd81",
-                    "count": 2
-                  },
-                  {
-                    "name": "\ud140\ube14\ub7ec",
-                    "count": 10
-                  }
-                ],
-                "rangeStart": 1000,
-                "rangeEnd": 1999
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Draw results",
-            "content": {
-              "application/json": {
-                "example": {
-                  "results": [
-                    {
-                      "ticket": 1005,
-                      "eid": "abc123"
-                    },
-                    {
-                      "ticket": 1010,
-                      "eid": "def456"
-                    }
-                  ]
+                  "bettedTeam": "기술기획"
                 }
               }
             }
