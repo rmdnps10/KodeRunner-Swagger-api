@@ -1,0 +1,384 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Koderunner Event API",
+    "version": "1.0.0",
+    "description": "Full API documentation for the TechXR Koderunner event system"
+  },
+  "paths": {
+    "/api/v1/attend/conference/{userId}": {
+      "post": {
+        "summary": "Conference attendance via QR (admin)",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attendance result",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ok": true,
+                  "ticketIssued": true,
+                  "ticket": 1001
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attend/session/{eid}/{trackId}/{sessionId}": {
+      "post": {
+        "summary": "Session attendance (participant)",
+        "parameters": [
+          {
+            "name": "eid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "trackId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "code": "9821"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Session attendance result",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ok": true,
+                  "ticketIssued": true,
+                  "ticket": 1005,
+                  "sessionCount": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/attend/booth/{eid}/{boothId}": {
+      "post": {
+        "summary": "Booth attendance (participant)",
+        "parameters": [
+          {
+            "name": "eid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "boothId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Booth attendance result",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ok": true,
+                  "ticketIssued": true,
+                  "ticket": 1022
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/random/{trackId}/{sessionId}": {
+      "get": {
+        "summary": "Get session attendance random code",
+        "parameters": [
+          {
+            "name": "trackId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Random code response",
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "9821"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user/{eid}": {
+      "get": {
+        "summary": "Get user info, tickets, and betting status",
+        "parameters": [
+          {
+            "name": "eid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User info response",
+            "content": {
+              "application/json": {
+                "example": {
+                  "userId": "charlie.shin",
+                  "displayName": "Charlie Shin",
+                  "qr": "https://.../charlie.shin.png",
+                  "lotteryTickets": [
+                    1000,
+                    1005
+                  ],
+                  "bettedTeam": "\uae30\uc220\uae30\ud68d"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/game": {
+      "post": {
+        "summary": "Create a new betting game (admin)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "gameId": "game-1",
+                "name": "\uae40\uce74\ubc45\uc758 \ud658\uc804\uc18c",
+                "teams": [
+                  "\uae30\uc220\uae30\ud68d",
+                  "\uac1c\ubc1c\ud601\uc2e0",
+                  "\uc11c\ube44\uc2a4\ub514\uc790\uc778"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Game created"
+          }
+        }
+      }
+    },
+    "/api/v1/game/{gameId}/start": {
+      "post": {
+        "summary": "Start a betting game (admin)",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Game started"
+          }
+        }
+      }
+    },
+    "/api/v1/game/{gameId}/finish": {
+      "post": {
+        "summary": "Finish a betting game and declare winner (admin)",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "winner": "\uae30\uc220\uae30\ud68d"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Winners processed, tickets issued"
+          }
+        }
+      }
+    },
+    "/api/v1/bet": {
+      "post": {
+        "summary": "Submit a bet on a game (participant)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "eid": "kxjidjijifej",
+                "gameId": "game-1",
+                "teamName": "\uae30\uc220\uae30\ud68d"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bet registered",
+            "content": {
+              "application/json": {
+                "example": {
+                  "ok": true,
+                  "message": "\ubca0\ud305 \uc644\ub8cc"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/bet/{eid}/{gameId}": {
+      "get": {
+        "summary": "Get a user's bet for a game",
+        "parameters": [
+          {
+            "name": "eid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bet info",
+            "content": {
+              "application/json": {
+                "example": {
+                  "teamName": "\uae30\uc220\uae30\ud68d"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/draw/prizes": {
+      "post": {
+        "summary": "Draw prizes from ticket pool (admin)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "prizes": [
+                  {
+                    "name": "\ub178\ud2b8\ubd81",
+                    "count": 2
+                  },
+                  {
+                    "name": "\ud140\ube14\ub7ec",
+                    "count": 10
+                  }
+                ],
+                "rangeStart": 1000,
+                "rangeEnd": 1999
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Draw results",
+            "content": {
+              "application/json": {
+                "example": {
+                  "results": [
+                    {
+                      "ticket": 1005,
+                      "eid": "abc123"
+                    },
+                    {
+                      "ticket": 1010,
+                      "eid": "def456"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
