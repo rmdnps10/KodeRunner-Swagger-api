@@ -6,7 +6,7 @@
     "description": "Koderunner 행사 진행을 위한 API 명세서입니다. 출석 체크, 베팅, 경품 추첨 기능을 포함합니다."
   },
   "paths": {
-    "/api/v1/attend/conference/{userId}": {
+    "/api/v1/attend/conference": {
       "post": {
         "summary": "컨퍼런스 출석 (운영진 QR 스캔)",
         "description": "운영진이 참가자의 QR 코드를 스캔하여 컨퍼런스 출석을 기록하는 API입니다. 최초 1회 출석 시에만 응모권이 발급됩니다.",
@@ -20,7 +20,15 @@
             }
           }
         ],
-        "requestBody": {},
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "userId": "charlie.shin"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "성공 응답",
@@ -39,7 +47,7 @@
     },
     "/api/v1/attend/program/{programId}": {
       "post": {
-        "summary": "세션/핸즈온/토론 출석 (참가자 입력)",
+        "summary": "프로그램(세션/핸즈온/토론) 출석 (참가자 입력)",
         "description": "4자리 난수를 입력하여 출석을 인증하는 API입니다. 세션 누적 3회 또는 핸즈온/토론 1회당 응모권 1장 발급.",
         "parameters": [
           {
@@ -67,7 +75,9 @@
             "content": {
               "application/json": {
                 "example": {
-                  "ok": true
+                  "ok": true,
+                  "ticketIssued": true,
+                  "ticket": 1012
                 }
               }
             }
@@ -75,7 +85,7 @@
         }
       }
     },
-    "/api/v1/attend/booth/{userId}/{boothId}": {
+    "/api/v1/attend/booth/{boothId}": {
       "post": {
         "summary": "부스 출석 (운영진 QR 스캔)",
         "description": "부스 방문 시 출석을 기록하는 API. 3개 이상 부스 출석 시 응모권 1장 발급.",
@@ -122,21 +132,13 @@
         }
       }
     },
-    "/api/v1/random/{trackId}/{sessionId}": {
+    "/api/v1/random/{programId}": {
       "get": {
-        "summary": "세션 출석용 난수 조회",
-        "description": "세션 시작 전에 사용하는 4자리 출석용 난수 코드 조회 API입니다.",
+        "summary": "프로그램 (세션/핸즈온/토론) 출석용 난수 조회",
+        "description": "프로그램 시작 전에 사용하는 4자리 출석용 난수 코드 조회 API입니다.",
         "parameters": [
           {
-            "name": "trackId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sessionId",
+            "name": "programId",
             "in": "path",
             "required": true,
             "schema": {
@@ -144,7 +146,6 @@
             }
           }
         ],
-        "requestBody": {},
         "responses": {
           "200": {
             "description": "성공 응답",
@@ -173,7 +174,6 @@
             }
           }
         ],
-        "requestBody": {},
         "responses": {
           "200": {
             "description": "성공 응답",
@@ -185,6 +185,30 @@
                   "lotteryTickets": [1000, 1005],
                   "bettedTeam": "기술기획"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/program/{programId}": {
+      "get": {
+        "summary": "프로그램 상세 조회",
+        "description": "세션/핸즈온/토론 프로그램의 상세 정보를 반환합니다.",
+        "parameters": [
+          {
+            "name": "programId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "프로그램 정보",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Program" }
               }
             }
           }
@@ -369,8 +393,83 @@
   },
   "components": {
     "schemas": {
+      "Ticket": {
+        "type": "object",
+        "required": [
+          "ticketId",
+          "userId",
+          "sourceType",
+          "sourceId",
+          "issuedAt"
+        ],
+        "properties": {
+          "ticketId": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "sourceType": {
+            "type": "string",
+            "enum": [
+              "conference",
+              "session",
+              "hands-on",
+              "discussion",
+              "booth",
+              "bet"
+            ]
+          },
+          "sourceId": {
+            "type": "string"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Program": {
+        "type": "object",
+        "required": [
+          "programId",
+          "title",
+          "type",
+          "trackId",
+          "startTime",
+          "endTime"
+        ],
+        "properties": {
+          "programId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["session", "hands-on", "discussion"]
+          },
+          "trackId": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "randomCode": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
       "User": {
         "type": "object",
+        "required": ["userId", "displayName", "qr", "lotteryTickets"],
         "properties": {
           "userId": {
             "type": "string"
@@ -388,12 +487,14 @@
             }
           },
           "bettedTeam": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         }
       },
       "Attendance": {
         "type": "object",
+        "required": ["userId", "type", "refId", "timestamp"],
         "properties": {
           "userId": {
             "type": "string"
@@ -411,29 +512,9 @@
           }
         }
       },
-      "Ticket": {
-        "type": "object",
-        "properties": {
-          "ticketId": {
-            "type": "integer"
-          },
-          "userId": {
-            "type": "string"
-          },
-          "sourceType": {
-            "type": "string"
-          },
-          "sourceId": {
-            "type": "string"
-          },
-          "issuedAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
       "Game": {
         "type": "object",
+        "required": ["gameId", "name", "teams", "status"],
         "properties": {
           "gameId": {
             "type": "string"
@@ -452,12 +533,14 @@
             "enum": ["NOT_STARTED", "ONGOING", "COMPLETED"]
           },
           "winner": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         }
       },
       "Bet": {
         "type": "object",
+        "required": ["userId", "gameId", "teamName", "createdAt"],
         "properties": {
           "userId": {
             "type": "string"
