@@ -3,13 +3,13 @@
   "info": {
     "title": "Koderunner API",
     "version": "1.0.0",
-    "description": "Koderunner 행사 진행을 위한 API 명세서  입니다. 출석 체크, 베팅, 경품 추첨 기능을 포함합니다."
+    "description": "Koderunner 행사 진행을 위한 API 명세서입니다. 출석 체크, 베팅, 경품 추첨 기능을 포함합니다."
   },
   "paths": {
     "/api/v1/attend/conference/{userId}": {
       "post": {
         "summary": "컨퍼런스 출석 (운영진 QR 스캔)",
-        "description": "운영진이 참가자의 QR 코드를 스캔하여 컨퍼런스 출석을 기록하는 API입니다. 최초 출석 시에만 응모권을 발급합니다.",
+        "description": "운영진이 참가자의 QR 코드를 스캔하여 컨퍼런스 출석을 기록하는 API입니다. 최초 1회 출석 시에만 응모권이 발급됩니다.",
         "parameters": [
           {
             "name": "userId",
@@ -20,9 +20,10 @@
             }
           }
         ],
+        "requestBody": {},
         "responses": {
           "200": {
-            "description": "출석 처리 결과",
+            "description": "성공 응답",
             "content": {
               "application/json": {
                 "example": {
@@ -36,29 +37,13 @@
         }
       }
     },
-    "/api/v1/attend/session/{eid}/{trackId}/{sessionId}": {
+    "/api/v1/attend/program/{programId}": {
       "post": {
-        "summary": "세션 출석 (참가자 입력)",
-        "description": "참가자가 세션에 참여 후 4자리 난수를 입력하여 출석을 인증하는 API입니다. 누적 세션 출석 3회마다 응모권이 발급됩니다.",
+        "summary": "세션/핸즈온/토론 출석 (참가자 입력)",
+        "description": "4자리 난수를 입력하여 출석을 인증하는 API입니다. 세션 누적 3회 또는 핸즈온/토론 1회당 응모권 1장 발급.",
         "parameters": [
           {
-            "name": "eid",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "trackId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sessionId",
+            "name": "programId",
             "in": "path",
             "required": true,
             "schema": {
@@ -70,21 +55,19 @@
           "content": {
             "application/json": {
               "example": {
-                "code": "9821"
+                "code": "9821",
+                "userId": "charlie.shin"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "세션 출석 처리 결과",
+            "description": "성공 응답",
             "content": {
               "application/json": {
                 "example": {
-                  "ok": true,
-                  "ticketIssued": true,
-                  "ticket": 1005,
-                  "sessionCount": 3
+                  "ok": true
                 }
               }
             }
@@ -92,13 +75,13 @@
         }
       }
     },
-    "/api/v1/attend/booth/{eid}/{boothId}": {
+    "/api/v1/attend/booth/{userId}/{boothId}": {
       "post": {
-        "summary": "부스 출석 (참가자)",
-        "description": "참가자가 부스를 방문하여 출석을 기록하는 API입니다. 부스에 대해 1회만 유효하며 응모권이 발급됩니다.",
+        "summary": "부스 출석 (운영진 QR 스캔)",
+        "description": "부스 방문 시 출석을 기록하는 API. 3개 이상 부스 출석 시 응모권 1장 발급.",
         "parameters": [
           {
-            "name": "eid",
+            "name": "userId",
             "in": "path",
             "required": true,
             "schema": {
@@ -114,9 +97,18 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "userId": "charlie.shin"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "부스 출석 결과",
+            "description": "성공 응답",
             "content": {
               "application/json": {
                 "example": {
@@ -133,7 +125,7 @@
     "/api/v1/random/{trackId}/{sessionId}": {
       "get": {
         "summary": "세션 출석용 난수 조회",
-        "description": "트랙과 세션 ID에 해당하는 4자리 출석용 난수를 조회하는 API입니다. 세션 시작 전 사용됩니다.",
+        "description": "세션 시작 전에 사용하는 4자리 출석용 난수 코드 조회 API입니다.",
         "parameters": [
           {
             "name": "trackId",
@@ -152,9 +144,10 @@
             }
           }
         ],
+        "requestBody": {},
         "responses": {
           "200": {
-            "description": "난수 반환",
+            "description": "성공 응답",
             "content": {
               "application/json": {
                 "example": {
@@ -166,13 +159,13 @@
         }
       }
     },
-    "/api/v1/user/{eid}": {
+    "/api/v1/user/{userId}": {
       "get": {
         "summary": "유저 정보 조회",
-        "description": "특정 참가자의 기본 정보, QR 코드, 응모권 목록 및 베팅 정보를 반환하는 API입니다.",
+        "description": "참가자의 기본 정보, 응모권 목록, QR코드, 베팅 정보 반환",
         "parameters": [
           {
-            "name": "eid",
+            "name": "userId",
             "in": "path",
             "required": true,
             "schema": {
@@ -180,23 +173,304 @@
             }
           }
         ],
+        "requestBody": {},
         "responses": {
           "200": {
-            "description": "유저 정보",
+            "description": "성공 응답",
             "content": {
               "application/json": {
                 "example": {
-                  "userId": "charlie.shin",
                   "displayName": "Charlie Shin",
-                  "qr": "https://.../charlie.shin.png",
-                  "lotteryTickets": [
-                    1000,
-                    1005
-                  ],
+                  "qr": "?userId=charlie.shin",
+                  "lotteryTickets": [1000, 1005],
                   "bettedTeam": "기술기획"
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/game": {
+      "post": {
+        "summary": "게임 생성",
+        "description": "결선 팀이 정해진 후, 게임 ID 및 팀 목록을 전달하여 단체 게임 생성",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "gameId": "game-1",
+                "nameList": ["기술기획", "기술XR", "브랜드디자인"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공 응답",
+            "content": {
+              "application/json": {
+                "example": {
+                  "description": "Game Created"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/game/{gameId}": {
+      "get": {
+        "summary": "게임 정보 조회",
+        "description": "단체게임 상태와 참여 팀 목록을 반환",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {},
+        "responses": {
+          "200": {
+            "description": "성공 응답",
+            "content": {
+              "application/json": {
+                "example": {
+                  "nameList": ["기술기획", "기술XR", "브랜드디자인"],
+                  "status": "NOT_STARTED"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/game/{gameId}/start": {
+      "post": {
+        "summary": "게임 시작",
+        "description": "게임 시작 시 상태를 ONGOING으로 변경하고 베팅을 마감",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {},
+        "responses": {
+          "200": {
+            "description": "성공 응답",
+            "content": {
+              "application/json": {
+                "example": {
+                  "description": "Game Started"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/game/{gameId}/finish": {
+      "post": {
+        "summary": "게임 종료 및 우승 팀 처리",
+        "description": "게임 종료 후 우승 팀을 지정하고 베팅 성공자에게 응모권 발급",
+        "parameters": [
+          {
+            "name": "gameId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "winner": "기술XR"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공 응답",
+            "content": {
+              "application/json": {
+                "example": {
+                  "description": "Game Ended"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/bet": {
+      "post": {
+        "summary": "게임 베팅",
+        "description": "게임 시작 전 참가자가 특정 팀에 베팅",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "userId": "charlie.shin",
+                "gameId": "game-1",
+                "teamName": "기술기획"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공 응답",
+            "content": {
+              "application/json": {
+                "example": {
+                  "description": "Bet registered"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ticket/range": {
+      "get": {
+        "summary": "응모권 범위 조회",
+        "description": "럭키드로우를 위한 응모권 번호 범위 반환",
+        "parameters": [],
+        "requestBody": {},
+        "responses": {
+          "200": {
+            "description": "성공 응답",
+            "content": {
+              "application/json": {
+                "example": {
+                  "range": [1000, 1924]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "qr": {
+            "type": "string"
+          },
+          "lotteryTickets": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "bettedTeam": {
+            "type": "string"
+          }
+        }
+      },
+      "Attendance": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["conference", "session", "booth"]
+          },
+          "refId": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Ticket": {
+        "type": "object",
+        "properties": {
+          "ticketId": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "sourceType": {
+            "type": "string"
+          },
+          "sourceId": {
+            "type": "string"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Game": {
+        "type": "object",
+        "properties": {
+          "gameId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "teams": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["NOT_STARTED", "ONGOING", "COMPLETED"]
+          },
+          "winner": {
+            "type": "string"
+          }
+        }
+      },
+      "Bet": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "gameId": {
+            "type": "string"
+          },
+          "teamName": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }
