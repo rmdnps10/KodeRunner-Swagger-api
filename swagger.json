@@ -9,7 +9,7 @@
     "/api/v1/attend/conference": {
       "post": {
         "summary": "컨퍼런스 출석 (운영진 QR 스캔)",
-        "description": "운영진이 참가자의 QR 코드를 스캔하여 컨퍼런스 출석을 기록하는 API입니다. 최초 1회 출석 시에만 응모권이 발급됩니다.",
+        "description": "운영진이 참가자의 QR 코드를 스캔하여 컨퍼런스 출석을 기록하는 API입니다. 스캔 시 user가 DB에 자동으로 등록됩니다. 만약 해당 userId가 존재하지 않는다면 user가 생성됩니다. 최초 1회 출석 시에만 응모권이 발급됩니다.",
         "parameters": [
           {
             "name": "userId",
@@ -90,14 +90,6 @@
         "summary": "부스 출석 (운영진 QR 스캔)",
         "description": "부스 방문 시 출석을 기록하는 API. 3개 이상 부스 출석 시 응모권 1장 발급.",
         "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
           {
             "name": "boothId",
             "in": "path",
@@ -180,10 +172,25 @@
             "content": {
               "application/json": {
                 "example": {
-                  "displayName": "Charlie Shin",
-                  "qr": "?userId=charlie.shin",
                   "lotteryTickets": [1000, 1005],
-                  "bettedTeam": "기술기획"
+                  "bettedTeam": "기술기획",
+                  "attendanceHistory": [
+                    {
+                      "type": "conference",
+                      "refId": "main",
+                      "timestamp": "2025-07-01T09:01:21"
+                    },
+                    {
+                      "type": "session",
+                      "refId": "session-101",
+                      "timestamp": "2025-07-01T10:32:47"
+                    },
+                    {
+                      "type": "booth",
+                      "refId": "booth-a",
+                      "timestamp": "2025-07-01T11:08:00"
+                    }
+                  ]
                 }
               }
             }
@@ -469,15 +476,14 @@
       },
       "User": {
         "type": "object",
-        "required": ["userId", "displayName", "qr", "lotteryTickets"],
+        "required": [
+          "userId",
+          "lotteryTickets",
+          "bettedTeam",
+          "attendanceHistory"
+        ],
         "properties": {
           "userId": {
-            "type": "string"
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "qr": {
             "type": "string"
           },
           "lotteryTickets": {
@@ -489,6 +495,12 @@
           "bettedTeam": {
             "type": "string",
             "nullable": true
+          },
+          "attendanceHistory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Attendance"
+            }
           }
         }
       },
@@ -504,6 +516,9 @@
             "enum": ["conference", "session", "booth"]
           },
           "refId": {
+            "type": "string"
+          },
+          "refTitle": {
             "type": "string"
           },
           "timestamp": {
